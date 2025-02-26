@@ -376,7 +376,7 @@ export class TxBuilder {
             };
           }
           return {
-            txIds: await await Promise.all(
+            txIds: await Promise.all(
               allTransactions.map(async (tx) => {
                 tx.recentBlockhash = recentBlockHash;
                 return await this.connection.sendRawTransaction(tx.serialize(), { skipPreflight });
@@ -405,7 +405,7 @@ export class TxBuilder {
               i++;
               let confirmed = false;
               // eslint-disable-next-line
-              let intervalId: NodeJS.Timer | null = null,
+              let intervalId: NodeJS.Timeout | null = null,
                 subSignatureId: number | null = null;
               const cbk = (signatureResult: SignatureResult): void => {
                 intervalId !== null && clearInterval(intervalId);
@@ -624,7 +624,12 @@ export class TxBuilder {
       instructionTypes: allInstructionTypes,
       buildProps,
       execute: async (executeParams?: MultiTxExecuteParam) => {
-        const { sequentially, onTxUpdate, recentBlockHash: propBlockHash, skipPreflight = true } = executeParams || {};
+        const {
+          sequentially,
+          onTxUpdate,
+          recentBlockHash: propBlockHash,
+          skipPreflight = true,
+        } = executeParams || {};
         if (propBlockHash) allTransactions.forEach((tx) => (tx.message.recentBlockhash = propBlockHash));
         printSimulate(allTransactions);
         if (this.owner?.isKeyPair) {
@@ -664,7 +669,7 @@ export class TxBuilder {
 
               let confirmed = false;
               // eslint-disable-next-line
-              let intervalId: NodeJS.Timer | null = null,
+              let intervalId: NodeJS.Timeout | null = null,
                 subSignatureId: number | null = null;
               const cbk = (signatureResult: SignatureResult): void => {
                 intervalId !== null && clearInterval(intervalId);
@@ -860,6 +865,7 @@ export class TxBuilder {
             for (const tx of allTransactions) {
               ++i;
               if (i <= skipTxCount) {
+                console.log("skip tx: ", i);
                 txIds.push("tx skipped");
                 continue;
               }
@@ -912,7 +918,7 @@ export class TxBuilder {
 
               let confirmed = false;
               // eslint-disable-next-line
-              let intervalId: NodeJS.Timer | null = null,
+              let intervalId: NodeJS.Timeout | null = null,
                 subSignatureId: number | null = null;
               const cbk = (signatureResult: SignatureResult): void => {
                 intervalId !== null && clearInterval(intervalId);
@@ -1198,7 +1204,7 @@ export class TxBuilder {
 
               let confirmed = false;
               // eslint-disable-next-line
-              let intervalId: NodeJS.Timer | null = null,
+              let intervalId: NodeJS.Timeout | null = null,
                 subSignatureId: number | null = null;
               const cbk = (signatureResult: SignatureResult): void => {
                 intervalId !== null && clearInterval(intervalId);
@@ -1251,9 +1257,9 @@ export class TxBuilder {
               );
               this.connection.getSignatureStatus(txId);
             };
-            checkSendTx();
+            await checkSendTx();
             return {
-              txIds: [],
+              txIds: processedTxs.map((d) => d.txId),
               signedTxs,
             };
           } else {
